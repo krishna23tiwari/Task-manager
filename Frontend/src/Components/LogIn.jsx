@@ -26,6 +26,7 @@ const Login = () => {
       localStorage.setItem('token', response.data.token);
 
       if (response.status === 200) {
+        
         alert(response.data.message);
         navi('/task');
       }
@@ -33,8 +34,8 @@ const Login = () => {
       if (error.response) {
         const { message } = error.response.data;
         alert(message);
-        // Redirect user to signup if credentials fail
-        navi('/');
+        
+        // navi('/');
       } else {
         alert('Network error. Please try again later.');
       }

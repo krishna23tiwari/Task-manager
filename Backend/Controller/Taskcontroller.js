@@ -78,9 +78,9 @@ exports.update = async(req, res) => {
 
 exports.showAdminDashboard = async (req, res) => {
     try {
-        const admins = await user.find({ role: 'admin' });
-        const users = await user.find({ role: 'user' });
-    
+        const admins = await user.find({ role: 'admin' }).select('-password');
+        const users = await user.find({ role: 'user' }).select('-password');
+
         const tasks = await taskmodel.find()
           .populate('assignedBy', 'firstname lastname email')
           .populate('assignedTo', 'firstname lastname email');

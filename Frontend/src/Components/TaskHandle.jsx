@@ -20,7 +20,7 @@ const TaskHandle = () => {
 
   const fetchTasks = async () => {
     try {
-      const res = await axios.get('http://localhost:2020/work/show');
+      const res = await axios.get('http://localhost:2020/work/show', getAuthHeaders());
       setTasks(res.data.notesData);
     } catch (err) {
       toast.error("Failed to fetch tasks");
@@ -37,11 +37,11 @@ const TaskHandle = () => {
 
     try {
       if (editingId) {
-        await axios.put(`http://localhost:2020/work/${editingId}`, formData);
+        await axios.put(`http://localhost:2020/work/${editingId}`, formData, getAuthHeaders());
         toast.success("Task updated!");
       } else {
         const date = new Date().toLocaleString();
-        await axios.post('http://localhost:2020/work/add', { ...formData, date });
+        await axios.post('http://localhost:2020/work/add', { ...formData, date }, getAuthHeaders());
         toast.success("Task added!");
       }
       setFormData({ title: '', content: '' });
@@ -54,7 +54,7 @@ const TaskHandle = () => {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:2020/work/${id}`);
+      await axios.delete(`http://localhost:2020/work/${id}`, getAuthHeaders());
       toast.success("Task deleted!");
       fetchTasks();
     } catch {

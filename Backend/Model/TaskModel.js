@@ -22,10 +22,12 @@ const taskSchema = new mongoose.Schema({
   assignedBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'userdata',
+    required: true
   },
   assignedTo: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'userdata',
+    required: true
   },
 }, {
   timestamps: true

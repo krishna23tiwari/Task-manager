@@ -1,46 +1,16 @@
-// const express = require('express')
-// const router = express.Router()
-// const auth = require('../Middlewear/Auth')
-
-// const taskcontroller = require('../Controller/Taskcontroller')
-
-// router.post("/create", taskcontroller.createrecord);
-
-// router.get('/show', taskcontroller.show)
-
-// router.delete('/:id', taskcontroller.remove)
-
-// router.post('/add', taskcontroller.add)
-
-// router.put('/:id', taskcontroller.update)
-
-
-// module.exports = router
-
-
 const express = require('express');
 const router = express.Router();
 const auth = require('../Middlewear/Auth');
 const taskcontroller = require('../Controller/Taskcontroller');
 
-// ------------------------
-// Dashboard Routes
-// ------------------------
+router.get('/admin/dashboard',auth, taskcontroller.showAdminDashboard);
 
-// Admin Dashboard: Show all users and tasks
-router.get('/admin/dashboard', taskcontroller.showAdminDashboard);
+router.get('/user/dashboard',auth, taskcontroller.showUserDashboard);
 
-// User Dashboard: Show tasks assigned to the logged-in user
-router.get('/user/dashboard', taskcontroller.showUserDashboard);
-
-// ------------------------
-// Task Routes
-// ------------------------
-
-router.post("/create", taskcontroller.createrecord);
-router.get('/show', taskcontroller.show);
-router.delete('/:id', taskcontroller.remove);
-router.post('/add', taskcontroller.add);
+router.post("/create",auth, taskcontroller.createrecord);
+router.get('/show',auth, taskcontroller.show);
+router.delete('/:id',auth, taskcontroller.remove);
+router.post('/add',auth, taskcontroller.add);
 router.put('/:id', auth, taskcontroller.update);
 
 module.exports = router;

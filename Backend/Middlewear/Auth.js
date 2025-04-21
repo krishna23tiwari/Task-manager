@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken')
-const secret = "asafghkklbbscjj"
+const secret = "asasfasfijqwijjqwmnasfa"
 const usermodel = require('../Model/UserModel')
 
 module.exports = async (req, res, next) => {
