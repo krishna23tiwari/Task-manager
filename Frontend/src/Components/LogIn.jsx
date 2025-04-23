@@ -15,32 +15,38 @@ const Login = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e) => {
+
+
+const handleSubmit = async (e) => {
     e.preventDefault();
     console.log('Login attempt with:', formData);
-
+  
     try {
       const response = await axios.post('http://localhost:2020/user/login', formData);
       console.log('>>>response>>>', response);
-
+  
+      if (response.data.user.status === 'inactive') {
+        alert('Your account is inactive...');
+        return; 
+      }
+  
+    
       localStorage.setItem('token', response.data.token);
-
+  
       if (response.status === 200) {
-        
         alert(response.data.message);
-        navi('/task');
+        navi('/task'); 
       }
     } catch (error) {
       if (error.response) {
         const { message } = error.response.data;
         alert(message);
-        
-        // navi('/');
       } else {
         alert('Network error. Please try again later.');
       }
     }
   };
+  
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-purple-900 to-black px-4 py-12">

@@ -15,12 +15,13 @@ mongoose.connect(mongoUrl)
 
 const userrouter = require('./Router/UserRouter')
 const taskrouter = require('./Router/TaskRouter')
-const emprouter = require('./Router/EmpRouter')
+const adminRoutes = require('./Router/AdminRoutes');
 
 
+app.use('/admin', adminRoutes);
 app.use('/user', userrouter)
 app.use('/work', taskrouter)
-app.use('/emp', emprouter)
+
 
 app.listen(port, () => {
     console.log(`port ${port} is listning`)
