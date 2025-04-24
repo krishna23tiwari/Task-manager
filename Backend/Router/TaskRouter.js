@@ -15,6 +15,7 @@ router.delete('/:id',auth, taskcontroller.remove);
 router.post('/add',auth, taskcontroller.add);
 router.put('/:id', auth, taskcontroller.update);
 
+router.put('/:id/complete', auth, taskcontroller.updatetask)
 
 
 module.exports = router;

@@ -21,6 +21,15 @@ const userSchema = new schema({
         required: true
       },
 
+      otp: {
+        type: Number,
+       
+      },
+    timer:{
+        type: Date
+    },
+    isVerified: { type: Boolean, default: false },
+
     AdminId: {
     type: schema.Types.ObjectId,
     ref: 'admin'

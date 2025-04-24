@@ -25,8 +25,12 @@ exports.show = async(req, res) =>{
         .populate("assignedTo", "firstname lastname email");
 
         console.log(notesData)
+
+        const currentUserEmail = req.user?.email;
+        const currentUserId = req.user?._id;
         
-        res.status(200).json({ notesData });
+        res.status(200).json({ notesData, currentUserEmail,
+            currentUserId, });
       } catch (error) {
         res.status(500).json({ error: "Failed to fetch notes data" });
       }
@@ -74,6 +78,16 @@ exports.add = async (req, res) => {
       res.status(500).json({ error: "Failed to add task" });
     }
   };
+
+exports.updatetask = async(req, res) => {
+    const { id } = req.params;
+    try {
+      const updatedTask = await taskmodel.findByIdAndUpdate(id, { completed: true }, { new: true });
+      res.json({ message: "Task marked as complete", updatedTask });
+    } catch (err) {
+      res.status(500).json({ error: "Failed to mark as complete" });
+    }
+}
   
 exports.update = async(req, res) => {
     try {
