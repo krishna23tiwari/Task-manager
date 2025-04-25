@@ -131,6 +131,27 @@ exports.showAdminDashboard = async (req, res) => {
       }
 };
 
+// exports.mark = async(req, res) => {
+//     try {
+//         const { id } = req.params;
+    
+//         const updatedTask = await taskmodel.findByIdAndUpdate(
+//           id,
+//           { completed: true, status: 'Completed' },
+//           { new: true }
+//         );
+    
+//         if (!updatedTask) {
+//           return res.status(404).json({ message: 'Task not found' });
+//         }
+    
+//         res.status(200).json(updatedTask);
+//       } catch (error) {
+//         console.error("Error marking task complete:", error);
+//         res.status(500).json({ message: 'Internal Server Error' });
+//       }
+// }
+
 exports.mark = async(req, res) => {
     try {
         const { id } = req.params;
@@ -151,6 +172,7 @@ exports.mark = async(req, res) => {
         res.status(500).json({ message: 'Internal Server Error' });
       }
 }
+
 
 
 

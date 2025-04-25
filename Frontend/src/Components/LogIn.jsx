@@ -320,6 +320,118 @@
 // export default Login;
 
 
+// import { useState } from 'react';
+// import { Link, useNavigate } from 'react-router-dom';
+// import axios from 'axios';
+
+// const Login = () => {
+//   const [formData, setFormData] = useState({
+//     email: '',
+//     password: '',
+//     otp: ''
+//   });
+//   const [otpRequired, setOtpRequired] = useState(false);
+//   const navi = useNavigate();
+
+//   const handleChange = (e) => {
+//     const { name, value } = e.target;
+//     setFormData(prev => ({ ...prev, [name]: value }));
+//   };
+
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+//     try {
+//       // build payload
+//       const payload = {
+//         email: formData.email,
+//         password: formData.password,
+//         ...(otpRequired && formData.otp ? { otp: formData.otp } : {})
+//       };
+
+//       const { data } = await axios.post(
+//         'http://localhost:2020/user/login',
+//         payload
+//       );
+
+//       // if still not verified, backend should have returned 200 with user.isVerified===false
+//       if (data.user && data.user.isVerified === false && !payload.otp) {
+//         setOtpRequired(true);
+//         alert('Please enter the OTP sent to your email.');
+//         return;
+//       }
+
+//       // success!
+//       localStorage.setItem('token', data.token);
+//       alert(data.message);
+//       navi('/user-dash');
+//     } catch (err) {
+//       const msg = err.response?.data?.message || 'Network error';
+//       // if backend tells us to enter OTP, flip the flag
+//       if (msg.toLowerCase().includes('otp')) {
+//         setOtpRequired(true);
+//         alert('Please enter the OTP sent to your email.');
+//         return;
+//       }
+//       alert(msg);
+//     }
+//   };
+
+
+
+//   return (
+//     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-purple-900 to-black px-4 py-12">
+//       <div className="bg-white/5 backdrop-blur-md shadow-xl rounded-2xl p-10 w-full max-w-md text-white transform hover:scale-105 transition">
+//         <h2 className="text-center text-3xl font-bold mb-6">Welcome Back</h2>
+//         <form onSubmit={handleSubmit} className="space-y-6">
+//           <input
+//             type="email"
+//             name="email"
+//             placeholder="Email"
+//             required
+//             value={formData.email}
+//             onChange={handleChange}
+//             className="w-full px-4 py-3 rounded-lg bg-gray-800 text-white border border-purple-700"
+//           />
+//           <input
+//             type="password"
+//             name="password"
+//             placeholder="Password"
+//             required
+//             value={formData.password}
+//             onChange={handleChange}
+//             className="w-full px-4 py-3 rounded-lg bg-gray-800 text-white border border-purple-700"
+//           />
+//           {otpRequired && (
+//             <input
+//               type="text"
+//               name="otp"
+//               placeholder="Enter OTP"
+//               required
+//               value={formData.otp}
+//               onChange={handleChange}
+//               className="w-full px-4 py-3 rounded-lg bg-gray-800 text-white border border-purple-700"
+//             />
+//           )}
+//           <button
+//             type="submit"
+//             className="w-full bg-purple-600 hover:bg-purple-700 py-3 rounded-lg font-semibold"
+//           >
+//             {otpRequired ? 'Verify OTP & Login' : 'Log In'}
+//           </button>
+//         </form>
+//         <p className="mt-6 text-center text-sm text-purple-300">
+//           Don’t have an account?{' '}
+//           <Link to="/" className="text-purple-400 hover:underline">
+//             Sign Up
+//           </Link>
+//         </p>
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default Login;
+
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -328,10 +440,8 @@ const Login = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    otp: ''
   });
-  const [otpRequired, setOtpRequired] = useState(false);
-  const navi = useNavigate();
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -341,42 +451,22 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // build payload
-      const payload = {
-        email: formData.email,
-        password: formData.password,
-        ...(otpRequired && formData.otp ? { otp: formData.otp } : {})
-      };
-
       const { data } = await axios.post(
         'http://localhost:2020/user/login',
-        payload
+        {
+          email: formData.email,
+          password: formData.password,
+        }
       );
 
-      // if still not verified, backend should have returned 200 with user.isVerified===false
-      if (data.user && data.user.isVerified === false && !payload.otp) {
-        setOtpRequired(true);
-        alert('Please enter the OTP sent to your email.');
-        return;
-      }
-
-      // success!
       localStorage.setItem('token', data.token);
       alert(data.message);
-      navi('/user-dash');
+      navigate('/user-dash');
     } catch (err) {
       const msg = err.response?.data?.message || 'Network error';
-      // if backend tells us to enter OTP, flip the flag
-      if (msg.toLowerCase().includes('otp')) {
-        setOtpRequired(true);
-        alert('Please enter the OTP sent to your email.');
-        return;
-      }
       alert(msg);
     }
   };
-
-
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-purple-900 to-black px-4 py-12">
@@ -401,22 +491,11 @@ const Login = () => {
             onChange={handleChange}
             className="w-full px-4 py-3 rounded-lg bg-gray-800 text-white border border-purple-700"
           />
-          {otpRequired && (
-            <input
-              type="text"
-              name="otp"
-              placeholder="Enter OTP"
-              required
-              value={formData.otp}
-              onChange={handleChange}
-              className="w-full px-4 py-3 rounded-lg bg-gray-800 text-white border border-purple-700"
-            />
-          )}
           <button
             type="submit"
             className="w-full bg-purple-600 hover:bg-purple-700 py-3 rounded-lg font-semibold"
           >
-            {otpRequired ? 'Verify OTP & Login' : 'Log In'}
+            Log In
           </button>
         </form>
         <p className="mt-6 text-center text-sm text-purple-300">
@@ -431,4 +510,3 @@ const Login = () => {
 };
 
 export default Login;
-

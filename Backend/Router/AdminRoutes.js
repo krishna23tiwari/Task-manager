@@ -9,6 +9,4 @@ router.post('/adminsignup',auth, admincontroller.signup);
 
 router.post('/adminlogin', admincontroller.login);
 
-
-
 module.exports = router;

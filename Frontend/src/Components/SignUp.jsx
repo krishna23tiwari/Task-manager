@@ -30,7 +30,7 @@ const SignUp = () => {
       const res = await axios.post('http://localhost:2020/user/signup', formData);
       if (res.status === 201) {
         alert(res.data.message);
-        navi('/login');
+        navi('/otp');
       } else {
         alert(res.data.message || 'Signup failed');
       }

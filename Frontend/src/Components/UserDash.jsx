@@ -1,20 +1,25 @@
+
 import { useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
 import { Pencil, Trash2 } from "lucide-react";
+import { useDispatch } from "react-redux";
+import { markTaskAsComplete, setTasks } from "../Slice/TaskManage";
 
-const TaskHandle = () => {
+const UserDash = () => {
   const [tasksAssignedToUser, setTasksAssignedToUser] = useState([]);
   const [tasksAssignedByUser, setTasksAssignedByUser] = useState([]);
   const [userEmail, setUserEmail] = useState(null);
   const [loadingTaskId, setLoadingTaskId] = useState(null);
 
+  const dispatch = useDispatch();
+
   const getAuthHeaders = () => {
     const token = localStorage.getItem("token");
     return {
       headers: {
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${token}`, // ✅ Fixed backtick
       },
     };
   };
@@ -24,9 +29,12 @@ const TaskHandle = () => {
       const res = await axios.get(
         "http://localhost:2020/work/show",
         getAuthHeaders()
-      );
+        
+      );console.log(`>>>>tasks>>>>`, res.data.notesData)
       const tasks = res.data.notesData;
       const currentUserEmail = res.data.currentUserEmail;
+      dispatch(setTasks(tasks));
+
 
       setUserEmail(currentUserEmail);
 
@@ -51,9 +59,12 @@ const TaskHandle = () => {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:2020/work/${id}`, getAuthHeaders());
+      await axios.delete(
+        `http://localhost:2020/work/${id}`,
+        getAuthHeaders()
+      );
       toast.success("Task deleted!");
-      fetchTasks();
+      fetchTasks(); // ✅ Refresh tasks
     } catch {
       toast.error("Failed to delete");
     }
@@ -63,30 +74,26 @@ const TaskHandle = () => {
     setLoadingTaskId(id);
     try {
       await axios.put(
-        `http://localhost:2020/work/${id}/complete`,
+        `http://localhost:2020/work/${id}/complete`, // ✅ Fixed URL
         {},
         getAuthHeaders()
       );
+      
+
       toast.success("Task marked as complete");
-      fetchTasks();
+      dispatch(markTaskAsComplete(id));
+      await fetchTasks(); // ✅ Refresh the task list after update
     } catch (err) {
-      console.error("Error completing task:", err);
       toast.error("Failed to mark task as complete");
     } finally {
       setLoadingTaskId(null);
     }
   };
 
-
-  
-  
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white p-6">
       <div className="flex flex-col sm:flex-row sm:justify-between items-center mb-10 gap-4">
-        <h1 className="text-4xl font-extrabold text-purple-300">
-          Tasks
-        </h1>
+        <h1 className="text-4xl font-extrabold text-purple-300">Tasks</h1>
         <Link
           to="/task"
           className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg text-sm font-medium shadow-md transition-all ease-in"
@@ -96,6 +103,7 @@ const TaskHandle = () => {
       </div>
 
       <div className="max-w-7xl mx-auto space-y-14">
+        {/* Tasks Assigned By Me */}
         <section>
           <h2 className="text-2xl font-semibold text-green-400 mb-6">
             Tasks Assigned By Me ({tasksAssignedByUser.length})
@@ -146,6 +154,7 @@ const TaskHandle = () => {
           )}
         </section>
 
+        {/* Tasks Assigned To Me */}
         <section>
           <h2 className="text-2xl font-semibold text-blue-400 mb-6">
             Tasks Assigned To Me ({tasksAssignedToUser.length})
@@ -188,7 +197,9 @@ const TaskHandle = () => {
                         className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm"
                         disabled={loadingTaskId === task._id}
                       >
-                        {loadingTaskId === task._id ? "Loading..." : "Complete"}
+                        {loadingTaskId === task._id
+                          ? "Loading..."
+                          : "Complete"}
                       </button>
                     )}
                   </div>
@@ -202,4 +213,4 @@ const TaskHandle = () => {
   );
 };
 
-export default TaskHandle;
+export default UserDash;

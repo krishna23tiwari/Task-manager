@@ -7,7 +7,7 @@ const taskSchema = new mongoose.Schema({
   status: { type: String, default: 'Pending' },
   completed: {
     type: Boolean,
-    default: false,
+    default: true,
   },
   assignedBy: {
     type: mongoose.Schema.Types.ObjectId,
