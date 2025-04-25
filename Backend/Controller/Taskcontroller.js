@@ -183,11 +183,19 @@ exports.showUserDashboard = async (req, res) => {
     const userId = req.user._id;
 
  
-    const tasks = await taskmodel.find({ assignedTo: userId })
-      .populate('assignedBy', 'firstname lastname')
-      .populate('assignedTo', 'firstname lastname');
+    // const tasks = await taskmodel.find({ assignedTo: userId })
+    //   .populate('assignedBy', 'firstname lastname')
+    //   .populate('assignedTo', 'firstname lastname');
 
-    res.status(200).json({ tasks });
+    const tasksAssignedTo = await taskmodel.find({ assignedTo: userId })
+    .populate('assignedBy', 'firstname lastname')
+    .populate('assignedTo', 'firstname lastname');
+
+  const tasksAssignedBy = await taskmodel.find({ assignedBy: userId })
+    .populate('assignedBy', 'firstname lastname')
+    .populate('assignedTo', 'firstname lastname');
+
+    res.status(200).json({ tasksAssignedTo, tasksAssignedBy });
   } catch (error) {
     res.status(500).json({ error: 'Error fetching user dashboard data' });
   }
