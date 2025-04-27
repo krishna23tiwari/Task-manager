@@ -11,65 +11,163 @@ const mailkey = "hneo ulux pgln lgts";
 
 
 
+
+// exports.signup = async (req, res) => {
+//   try {
+//     const { firstname, lastname, email, password, role } = req.body;
+
+//     const existingUser = await usermodel.findOne({ email });
+//     if (existingUser) {
+//       return res.status(400).json({
+//         message: "Email already exists. Please use a different one.",
+//       });
+//     }
+
+//     const salt = bcrypt.genSaltSync(10);
+//     const hash = bcrypt.hashSync(password, salt);
+
+//     let otp = "";
+//     for (let i = 0; i < 6; i++) {
+//       otp += Math.floor(Math.random() * 10);
+//     }
+//     const currTimer = moment();
+//     const otpTimer = currTimer.clone().add(10, "minutes");
+
+//     console.log('email send to :', email);
+// console.log('sender email:', senderemail);
+
+//     // Send OTP via email
+//     const emailSent = await sendOtpEmail(
+//       email,
+//       otp,
+//       `${firstname} ${lastname}`,
+//       senderemail,
+//       mailkey
+//     );
+
+//     if (!emailSent) {
+//       return res.status(500).json({ message: "Failed to send OTP email" });
+//     }
+
+//     const newUser = new usermodel({
+//       firstname,
+//       lastname,
+//       email,
+//       password: hash,
+//       role,
+//       otp,
+//       otpTimer,
+//     });
+
+//     const savedUser = await newUser.save();
+
+//     res.status(201).json({
+//       message: "User created successfully. Please check your email for OTP.",
+//       userId: savedUser._id,
+//     });
+//   } catch (error) {
+//     console.error("Signup error:", error);
+//     res.status(500).json({ message: "An error occurred during registration" });
+//   }
+// };
+
+
 exports.signup = async (req, res) => {
-  try {
-    const { firstname, lastname, email, password, role } = req.body;
-
-    const existingUser = await usermodel.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({
-        message: "Email already exists. Please use a different one.",
+    try {
+      const { firstname, lastname, email, password } = req.body;
+      const role = req.body.role || "user"; // default role
+  
+      // Validate important fields
+      if (!firstname || !lastname || !email || !password) {
+        return res.status(400).json({ message: "All fields are required" });
+      }
+  
+      const existingUser = await usermodel.findOne({ email });
+      if (existingUser) {
+        return res.status(400).json({
+          message: "Email already exists. Please use a different one.",
+        });
+      }
+  
+      const salt = bcrypt.genSaltSync(10);
+      const hash = bcrypt.hashSync(password, salt);
+  
+      let otp = "";
+      for (let i = 0; i < 6; i++) {
+        otp += Math.floor(Math.random() * 10);
+      }
+  
+      const currTimer = moment();
+      const otpTimer = currTimer.clone().add(10, "minutes"); // OTP valid for 10 minutes
+  
+      console.log('Email sending to:', email);
+  
+      const emailSent = await sendOtpEmail(
+        firstname,
+        lastname,
+        email,
+        otp,
+        senderemail,
+        mailkey
+      );
+  
+      if (!emailSent) {
+        return res.status(500).json({ message: "Failed to send OTP email" });
+      }
+  
+      const newUser = new usermodel({
+        firstname,
+        lastname,
+        email,
+        password: hash,
+        role,
+        otp, 
+        otpTimer,
       });
+  
+      const savedUser = await newUser.save();
+  
+      res.status(201).json({
+        message: "User created successfully. Please check your email for OTP.",
+        userId: savedUser._id,
+      });
+    } catch (error) {
+      console.error("Signup error:", error);
+      res.status(500).json({ message: "An error occurred during registration" });
     }
+  };
 
-    const salt = bcrypt.genSaltSync(10);
-    const hash = bcrypt.hashSync(password, salt);
 
-    let otp = "";
-    for (let i = 0; i < 6; i++) {
-      otp += Math.floor(Math.random() * 10);
+  exports.verifyOtp = async (req, res) => {
+    try {
+      const { email, otp } = req.body;
+  
+      const user = await usermodel.findOne({ email });
+      if (!user) {
+        return res.status(400).json({ message: "User not found." });
+      }
+  
+      if (user.otp !== otp) {
+        return res.status(400).json({ message: "Incorrect OTP." });
+      }
+  
+      const currTime = moment();
+      if (currTime.isAfter(user.otpTimer)) {
+        return res.status(400).json({ message: "OTP expired. Please signup again." });
+      }
+  
+      user.otp = null;
+      user.otpTimer = null;
+      await user.save();
+  
+      res.status(200).json({ message: "OTP verified successfully." });
+    } catch (error) {
+      console.error("OTP verification error:", error);
+      res.status(500).json({ message: "Server error during OTP verification." });
     }
-    const currTimer = moment();
-    const otpTimer = currTimer.clone().add(10, "minutes");
-
-    console.log('email send to :', email);
-console.log('sender email:', senderemail);
-
-    // Send OTP via email
-    const emailSent = await sendOtpEmail(
-      email,
-      otp,
-      `${firstname} ${lastname}`,
-      senderemail,
-      mailkey
-    );
-
-    if (!emailSent) {
-      return res.status(500).json({ message: "Failed to send OTP email" });
-    }
-
-    const newUser = new usermodel({
-      firstname,
-      lastname,
-      email,
-      password: hash,
-      role,
-      otp,
-      otpTimer,
-    });
-
-    const savedUser = await newUser.save();
-
-    res.status(201).json({
-      message: "User created successfully. Please check your email for OTP.",
-      userId: savedUser._id,
-    });
-  } catch (error) {
-    console.error("Signup error:", error);
-    res.status(500).json({ message: "An error occurred during registration" });
-  }
-};
-
+  };
+  
+  
 
 
 exports.softDeleteUser = async (req, res) => {

@@ -9,6 +9,9 @@ router.post('/login', user.login)
 
 router.patch('/soft-delete/:id', auth, user.softDeleteUser);
 
+router.post('/verify-otp', user.verifyOtp);
+
+
 router.get('/all', user.getAllUsers);
 
 

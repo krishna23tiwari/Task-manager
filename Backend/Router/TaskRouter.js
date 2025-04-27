@@ -9,8 +9,8 @@ router.get('/user/dashboard',auth, taskcontroller.showUserDashboard);
 
 router.put('/mark-complete/:id', auth, taskcontroller.mark)
 
-router.post("/create",auth, taskcontroller.createrecord);
-router.get('/show',auth, taskcontroller.show);
+router.post("/create",auth, taskcontroller.ShowUserInDropDown);
+router.get('/show',auth, taskcontroller.ShowAllTasks);
 router.delete('/:id',auth, taskcontroller.remove);
 router.post('/add',auth, taskcontroller.add);
 router.put('/:id', auth, taskcontroller.update);

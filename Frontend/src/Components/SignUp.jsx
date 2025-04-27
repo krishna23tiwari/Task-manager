@@ -27,9 +27,10 @@ const SignUp = () => {
     }
 
     try {
-      const res = await axios.post('http://localhost:2020/user/signup', formData);
+      const res = await axios.post('http://localhost:2020/user/signup', {...formData, role: 'user'});
       if (res.status === 201) {
         alert(res.data.message);
+        localStorage.setItem('signupEmail', formData.email);
         navi('/otp');
       } else {
         alert(res.data.message || 'Signup failed');

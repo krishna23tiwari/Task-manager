@@ -6,8 +6,10 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 
 const TaskHandle = () => {
   const location = useLocation();
+  const loc = useLocation();
   const navigate = useNavigate();
   const taskToEdit = location.state?.task || null;
+  const {userId} = loc.state || {}
 
   const [tasks, setTasks] = useState([]);
   const [formData, setFormData] = useState({
@@ -54,6 +56,13 @@ const TaskHandle = () => {
   }, []);
 
   useEffect(() => {
+    if (userId) {
+      setFormData((prev) => ({ ...prev, assignedTo: userId }));
+    }
+  }, [userId]);
+  
+
+  useEffect(() => {
     if (taskToEdit) {
       setFormData({
         title: taskToEdit.title,
@@ -93,6 +102,9 @@ const TaskHandle = () => {
     }
   };
 
+
+  
+
   const filteredTasks = tasks
     .filter((task) => task.title.toLowerCase().includes(searchTerm.toLowerCase()))
     .sort((a, b) => {
@@ -105,12 +117,7 @@ const TaskHandle = () => {
       <h1 className="text-3xl font-bold mb-6 text-center">Task Manager</h1>
 
       <div className="flex justify-between max-w-3xl mx-auto mb-4">
-        {/* <Link
-          to="/task"
-          className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg text-sm font-medium shadow-md transition-all ease-in"
-        >
-          Add Task
-        </Link> */}
+     
         <button
           onClick={() => setShowTasks(!showTasks)}
           className="bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-2 rounded-lg text-sm font-medium shadow-md transition-all ease-in"
@@ -138,6 +145,9 @@ const TaskHandle = () => {
           onChange={(e) => setFormData({ ...formData, assignedTo: e.target.value })}
           className="w-full bg-gray-700 border border-gray-600 text-white p-3 mb-4 rounded"
         >
+
+
+
           <option value="">Select user to assign</option>
           {users.map((user) => (
             <option key={user._id} value={user._id}>
@@ -199,4 +209,6 @@ const TaskHandle = () => {
 };
 
 export default TaskHandle;
+
+
 

@@ -22,7 +22,7 @@ const userSchema = new schema({
       },
 
       otp: {
-        type: Number,
+        type: String,
        
       },
     timer:{

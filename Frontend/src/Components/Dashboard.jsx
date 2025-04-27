@@ -250,13 +250,18 @@ import axios from 'axios';
 import { motion } from 'framer-motion';
 import { FaUsers } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [admins, setAdmins] = useState([]);
   const [users, setUsers] = useState([]);
   const [selectedCard, setSelectedCard] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortOrder, setSortOrder] = useState('asc');
+
 
   const cardColors = {
     admins:         { bg: 'bg-gradient-to-r from-blue-600 to-blue-400',    hover: 'hover:from-blue-700 hover:to-blue-500',    border: 'border-blue-700',    text: 'text-black' },
@@ -303,34 +308,72 @@ const Dashboard = () => {
     }
   };
 
+  const handleAssignTask = (userId) => {
+    navigate('/task', { state: { userId } });
+  };
+  
+  
+
   const activeUsers   = users.filter(u => u.status === 'active');
   const inactiveUsers = users.filter(u => u.status === 'inactive');
 
-  const renderDetails = () => {
+const renderDetails = () => {
     if (!selectedCard) return null;
-
+  
     let data = [];
     let headers = [];
-
+  
     switch (selectedCard) {
       case 'admins':         data = admins;         headers = ['_id','email']; break;
       case 'activeUsers':    data = activeUsers;    headers = ['_id','firstname','lastname','email','status']; break;
       case 'inactiveUsers':  data = inactiveUsers;  headers = ['_id','firstname','lastname','email','status']; break;
       default: return null;
     }
-
+  
+    const filteredData = data
+      .filter((item) => {
+        const values = Object.values(item).join(' ').toLowerCase();
+        return values.includes(searchQuery.toLowerCase());
+      })
+      .sort((a, b) => {
+        const nameA = a.firstname ? a.firstname.toLowerCase() : '';
+        const nameB = b.firstname ? b.firstname.toLowerCase() : '';
+        return sortOrder === 'asc' ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
+      });
+  
     return (
       <motion.div
         className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex justify-center items-center z-50"
         initial={{ opacity: 0 }} animate={{ opacity: 1 }}
       >
-        <div className="bg-white text-black max-w-5xl w-full rounded-xl shadow-xl p-6 relative overflow-auto max-h-[90vh]">
+        <div className="bg-white text-black max-w-6xl w-full rounded-xl shadow-xl p-6 relative overflow-auto max-h-[90vh]">
           <button
             onClick={() => setSelectedCard(null)}
             className="absolute top-3 right-3 text-red-500 hover:text-red-700 text-xl font-bold"
           >✕</button>
-
-          <h3 className="text-2xl font-bold mb-4 capitalize">{selectedCard} Details</h3>
+  
+          <h3 className="text-2xl font-bold mb-6 capitalize">{selectedCard} Details</h3>
+  
+          {/* Search and Sort */}
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
+            <input
+              type="text"
+              placeholder="Search..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="bg-white text-black placeholder-gray-500 border border-gray-300 rounded-md px-4 py-2 shadow-md focus:outline-none focus:ring-2 focus:ring-blue-400 w-full md:w-1/2"
+            />
+            <select
+              value={sortOrder}
+              onChange={(e) => setSortOrder(e.target.value)}
+              className="bg-white text-black border border-gray-300 rounded-md px-4 py-2 shadow-md focus:outline-none focus:ring-2 focus:ring-blue-400 w-full md:w-1/4"
+            >
+              <option value="asc">Sort: A-Z</option>
+              <option value="desc">Sort: Z-A</option>
+            </select>
+          </div>
+  
+          {/* Table */}
           <table className="min-w-full border text-black shadow-lg rounded overflow-hidden">
             <thead className="bg-gray-200">
               <tr>
@@ -341,17 +384,27 @@ const Dashboard = () => {
               </tr>
             </thead>
             <tbody>
-              {data.map((item,i) => (
+              {filteredData.map((item,i) => (
                 <tr key={i} className="hover:bg-gray-100">
                   {headers.map((h,j) => (
                     <td key={j} className="px-6 py-3">{String(item[h])}</td>
                   ))}
-                  <td className="px-6 py-3">
+                  <td className="px-6 py-3 flex gap-2">
+                    {selectedCard === 'activeUsers' && (
+                      <button
+                        onClick={() => handleAssignTask(item._id)}
+                        className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded"
+                      >
+                        Assign
+                      </button>
+                    )}
                     {item.status !== 'inactive' && (
                       <button
                         onClick={() => handleDeactivateUser(item._id)}
-                        className="bg-red-500 text-white px-3 py-1 rounded"
-                      >✕</button>
+                        className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+                      >
+                        ✕
+                      </button>
                     )}
                   </td>
                 </tr>
@@ -362,6 +415,7 @@ const Dashboard = () => {
       </motion.div>
     );
   };
+  
 
   const renderIcon = () => <FaUsers size={24} className="text-white" />;
 

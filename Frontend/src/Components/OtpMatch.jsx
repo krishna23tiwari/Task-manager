@@ -1,20 +1,34 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const OtpMatch = () => {
   const [otp, setOtp] = useState('');
   const navigate = useNavigate();
+  const email = localStorage.getItem('signupEmail'); 
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Dummy OTP match (you can replace this with backend verification later)
-    const correctOtp = "123456";
+    if (!email) {
+      alert('No email found. Please signup again.');
+      navigate('/signup');
+      return;
+    }
 
-    if (otp === correctOtp) {
-      navigate('/login');  // Redirect to login page
-    } else {
-      alert("Incorrect OTP. Please try again.");
+    try {
+      const res = await axios.post('http://localhost:2020/user/verify-otp', {
+        email,
+        otp,
+      });
+
+      if (res.status === 200) {
+        alert(res.data.message);
+        localStorage.removeItem('signupEmail'); 
+        navigate('/login'); 
+      }
+    } catch (error) {
+      alert(error?.response?.data?.message || 'Something went wrong.');
     }
   };
 
@@ -41,3 +55,4 @@ const OtpMatch = () => {
 };
 
 export default OtpMatch;
+
