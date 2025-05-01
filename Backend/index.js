@@ -3,6 +3,10 @@ const mongoose = require('mongoose')
 const app = express();
 const port = 2020;
 const cors = require('cors')
+const fileupload = require('express-fileupload')
+
+app.use(fileupload())
+app.use(express.urlencoded({extended:true}))
 
 app.use(express.json())
 app.use(cors())
@@ -15,10 +19,10 @@ mongoose.connect(mongoUrl)
 
 const userrouter = require('./Router/UserRouter')
 const taskrouter = require('./Router/TaskRouter')
-const adminRoutes = require('./Router/AdminRoutes');
+// const adminRoutes = require('./Router/AdminRoutes');
 
 
-app.use('/admin', adminRoutes);
+// app.use('/admin', adminRoutes);
 app.use('/user', userrouter)
 app.use('/work', taskrouter)
 

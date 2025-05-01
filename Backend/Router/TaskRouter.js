@@ -17,5 +17,7 @@ router.put('/:id', auth, taskcontroller.update);
 
 router.put('/:id/complete', auth, taskcontroller.updatetask)
 
+router.post('/image-upload', auth, taskcontroller.addTaskWithImage)
+
 
 module.exports = router;

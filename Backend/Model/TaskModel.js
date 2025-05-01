@@ -19,6 +19,9 @@ const taskSchema = new mongoose.Schema({
     ref: 'userdata',
     
   },
+  image: {
+    type: String, 
+  },
   
 }, {
   timestamps: true,versionKey: false

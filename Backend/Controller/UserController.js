@@ -10,74 +10,12 @@ const mailkey = "hneo ulux pgln lgts";
 
 
 
-
-
-// exports.signup = async (req, res) => {
-//   try {
-//     const { firstname, lastname, email, password, role } = req.body;
-
-//     const existingUser = await usermodel.findOne({ email });
-//     if (existingUser) {
-//       return res.status(400).json({
-//         message: "Email already exists. Please use a different one.",
-//       });
-//     }
-
-//     const salt = bcrypt.genSaltSync(10);
-//     const hash = bcrypt.hashSync(password, salt);
-
-//     let otp = "";
-//     for (let i = 0; i < 6; i++) {
-//       otp += Math.floor(Math.random() * 10);
-//     }
-//     const currTimer = moment();
-//     const otpTimer = currTimer.clone().add(10, "minutes");
-
-//     console.log('email send to :', email);
-// console.log('sender email:', senderemail);
-
-//     // Send OTP via email
-//     const emailSent = await sendOtpEmail(
-//       email,
-//       otp,
-//       `${firstname} ${lastname}`,
-//       senderemail,
-//       mailkey
-//     );
-
-//     if (!emailSent) {
-//       return res.status(500).json({ message: "Failed to send OTP email" });
-//     }
-
-//     const newUser = new usermodel({
-//       firstname,
-//       lastname,
-//       email,
-//       password: hash,
-//       role,
-//       otp,
-//       otpTimer,
-//     });
-
-//     const savedUser = await newUser.save();
-
-//     res.status(201).json({
-//       message: "User created successfully. Please check your email for OTP.",
-//       userId: savedUser._id,
-//     });
-//   } catch (error) {
-//     console.error("Signup error:", error);
-//     res.status(500).json({ message: "An error occurred during registration" });
-//   }
-// };
-
-
 exports.signup = async (req, res) => {
     try {
       const { firstname, lastname, email, password } = req.body;
-      const role = req.body.role || "user"; // default role
+      const role = req.body.role || "user"; 
   
-      // Validate important fields
+    
       if (!firstname || !lastname || !email || !password) {
         return res.status(400).json({ message: "All fields are required" });
       }
@@ -98,15 +36,14 @@ exports.signup = async (req, res) => {
       }
   
       const currTimer = moment();
-      const otpTimer = currTimer.clone().add(10, "minutes"); // OTP valid for 10 minutes
+      const otpTimer = currTimer.clone().add(10, "minutes"); 
   
       console.log('Email sending to:', email);
   
       const emailSent = await sendOtpEmail(
-        firstname,
-        lastname,
         email,
         otp,
+        firstname,
         senderemail,
         mailkey
       );
@@ -193,33 +130,79 @@ exports.softDeleteUser = async (req, res) => {
   
 
 
-exports.login = async (req, res) => {
-    const { email, password, otp } = req.body;
+// exports.login = async (req, res) => {
+//     const { email, password } = req.body;
   
+//     const user = await usermodel.findOne({ email });
+//     if (!user) {
+//       return res.status(401).json({ message: "Incorrect email" }); 
+//     }
+
+//     if (user.status === 'inactive') {
+//         return res.status(403).json({ message: 'Your account is inactive...' });
+//       }
+      
+  
+//     const pwd = user.password
+//     console.log(`>>>pwd>>`, pwd)
+
+//     const match = bcrypt.compareSync(password, pwd);
+//     if (!match) {
+//       return res.status(401).json({ message: "Incorrect password" });
+//     }
+
+//     const token = jwt.sign({ email }, secret, { expiresIn: '1h' });
+
+//     res.status(200).json({ message: "Login successful", user, token });
+//   };
+
+exports.login = async (req, res) => {
+    const { email, password } = req.body;
+  
+    // Find the user based on email
     const user = await usermodel.findOne({ email });
+    
+    // If no user found, return error
     if (!user) {
       return res.status(401).json({ message: "Incorrect email" }); 
     }
-
-    if (user.status === 'inactive') {
-        return res.status(403).json({ message: 'Your account is inactive...' });
-      }
-      
   
-    const pwd = user.password
-    console.log(`>>>pwd>>`, pwd)
-
-    const match = bcrypt.compareSync(password, pwd);
+    // Check if the user account is inactive
+    if (user.status === 'inactive') {
+      return res.status(403).json({ message: 'Your account is inactive...' });
+    }
+  
+    // Compare the password
+    const match = bcrypt.compareSync(password, user.password);
     if (!match) {
       return res.status(401).json({ message: "Incorrect password" });
     }
-
-    const token = jwt.sign({ email }, secret, { expiresIn: '1h' });
-
-    res.status(200).json({ message: "Login successful", user, token });
+  
+    // Generate JWT token
+    const token = jwt.sign({ email, role: user.role }, secret, { expiresIn: '1h' });
+  
+    // Set token in response
+    const responseData = {
+      message: "Login successful",
+      user,
+      token,
+      role: user.role,
+    };
+  
+    // Redirect based on role
+    if (user.role === 'admin') {
+      responseData.redirectTo = '/dash';  // Admin dashboard route
+    } else {
+      responseData.redirectTo = '/user-dash';  // User dashboard route
+    }
+  
+    res.status(200).json(responseData);
   };
   
-  exports.getAllUsers = async (req, res) => {
+
+
+  
+exports.getAllUsers = async (req, res) => {
     try {
       const users = await usermodel.find({ status: { $ne: 'inactive' } }).select("-password");
       res.status(200).json({ users });
@@ -230,70 +213,5 @@ exports.login = async (req, res) => {
   };
   
 
-
-
-//   exports.login = async (req, res) => {
-//     try {
-//       const { email, password, otp } = req.body;
-//       const user = await usermodel.findOne({ email });
-  
-//       if (!user) {
-//         return res.status(401).json({ message: "Incorrect email" });
-//       }
-//       if (user.status === 'inactive') {
-//         return res.status(403).json({ message: "Your account is inactive" });
-//       }
-  
-//       // 1) Check password
-//       if (!bcrypt.compareSync(password, user.password)) {
-//         return res.status(401).json({ message: "Incorrect password" });
-//       }
-  
-//       // 2) If user not yet verified, require OTP
-//       if (!user.isVerified) {
-//         // a) no OTP submitted?
-//         if (!otp) {
-//           return res.status(401).json({ message: "OTP required for first-time login" });
-//         }
-//         // b) wrong OTP?
-//         if (otp !== user.otp) {
-//           return res.status(401).json({ message: "Invalid OTP" });
-//         }
-//         // c) expired OTP?
-//         if (moment().isAfter(user.otpTimer)) {
-//           return res.status(401).json({ message: "OTP expired" });
-//         }
-  
-//         // d) mark verified & clear OTP fields
-//         user.isVerified = true;
-//         user.otp = undefined;
-//         user.otpTimer = undefined;
-//         await user.save();
-//       }
-  
-//       // 3) generate JWT
-//       const token = jwt.sign(
-//         { id: user._id, email: user.email, role: user.role },
-//         secret,
-//         { expiresIn: '1h' }
-//       );
-  
-//       return res.status(200).json({
-//         message: "Login successful",
-//         user: {
-//           id: user._id,
-//           firstname: user.firstname,
-//           lastname: user.lastname,
-//           email: user.email,
-//           role: user.role,
-//         },
-//         token,
-//       });
-  
-//     } catch (error) {
-//       console.error("Login error:", error);
-//       return res.status(500).json({ message: "An error occurred during login" });
-//     }
-//   };
 
 
